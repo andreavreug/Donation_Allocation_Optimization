@@ -40,8 +40,8 @@ The model requires an Excel file (`project_data.xlsx`) with the following sheets
 ## Model Structure
 
 ### Decision Variables
-- `x[p]`: Amount (in dollars) allocated to project p
-- `y[p]`: Number of iterations for project p
+- $x_p$: Amount (in dollars) allocated to project $p$
+- $y_p$: Number of iterations for project $p$
 
 ### Constraints
 - Budget constraint (total allocation ≤ $50,000)
@@ -51,7 +51,9 @@ The model requires an Excel file (`project_data.xlsx`) with the following sheets
 - Dependency constraints (prerequisite validation)
 
 ### Objective Function
-Maximizes: $\sum_p \frac{x_p}{\text{cost\_cap}[p]} \times \text{total\_weight}[p]$
+Maximizes:
+
+$$\sum_p \frac{x_p}{\text{cost\_cap}[p]} \times \text{total\_weight}[p]$$
 
 ## Usage
 
