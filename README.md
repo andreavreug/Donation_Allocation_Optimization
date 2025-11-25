@@ -38,37 +38,114 @@ The model requires an Excel file (`project_data.xlsx`) with the following sheets
   
 - **Weights sheet**: Charity-specific impact weights
 
-## Model Structure
+## Mathematical Model
+
+### Sets and Indices
+
+| Symbol | Description |
+|--------|-------------|
+| $P$ | Set of all projects |
+| $P_{\text{JMDM}}$ | Projects belonging to JMDM charity |
+| $P_{\text{CSM}}$ | Projects belonging to CSM charity |
+| $P_{\text{LT}}$ | Long-term projects |
+| $p$ | Index for projects |
+
+### Parameters
+
+| Symbol | Description | Value |
+|--------|-------------|-------|
+| $B$ | Total budget | 50,000 |
+| $A_{\text{JMDM}}$ | Minimum allocation to JMDM | 10,000 |
+| $A_{\text{CSM}}$ | Minimum allocation to CSM | 15,000 |
+| $L$ | Minimum proportion for long-term projects | 0.75 |
+| $C_p$ | Cost cap (per iteration) for project $p$ | — |
+| $M_p$ | Minimum funding required if project $p$ is funded | — |
+| $N_p$ | Maximum number of iterations for project $p$ | — |
+| $w_p$ | Total impact weight for project $p$ | — |
+| $e_p, c_p, h_p$ | Education, community, health impact scores | — |
 
 ### Decision Variables
-- `x[p]`: Amount (in dollars) allocated to project p
-- `y[p]`: Number of iterations for project p
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| $x_p$ | Continuous | Amount (in dollars) allocated to project $p$ |
+| $y_p$ | Integer | Number of iterations for project $p$ |
 
 ### Constraints
-- Budget constraint (total allocation ≤ $50,000)
-- Charity minimum allocations ($10,000 to JMDM, $15,000 to CSM)
-- Long-term project minimum (≥75% of total allocation)
-- Project-specific constraints (cost caps, iteration limits, minimum funding)
-- Dependency constraints (prerequisite validation)
 
-### Objective Function
+**Budget Constraint:**
 
-#### Model 1: Weighted Sum Approach
+$$\sum_{p \in P} x_p \leq B$$
 
-Maximizes total weighted impact based on funding efficiency:
+**Charity Minimum Allocations:**
 
-$$\text{Maximize} \quad \sum_p \frac{x_p}{\text{cost\_cap}[p]} \times \text{total\_weight}[p]$$
+$$\sum_{p \in P_{\text{JMDM}}} x_p \geq A_{\text{JMDM}}$$
+
+$$\sum_{p \in P_{\text{CSM}}} x_p \geq A_{\text{CSM}}$$
+
+**Long-Term Project Requirement:**
+
+$$\sum_{p \in P_{\text{LT}}} x_p \geq L \cdot \sum_{p \in P} x_p$$
+
+**Allocation-Iteration Linkage:**
+
+$$x_p = y_p \cdot C_p \quad \forall p \in P$$
+
+**Iteration Limits:**
+
+$$y_p \leq N_p \quad \forall p \in P$$
+
+**Minimum Funding Threshold:**
+
+$$x_p \geq M_p \cdot \mathbb{1}_{[x_p > 0]} \quad \forall p \in P$$
+
+**Dependency Constraints:**
+
+$$x_p \leq x_q \cdot \frac{C_p}{M_q} \quad \forall p \text{ where } p \text{ depends on } q$$
+
+---
+
+### Model 1: Weighted Sum Approach
+
+**Objective:** Maximize total weighted impact based on funding efficiency.
+
+$$\text{Maximize} \quad Z = \sum_{p \in P} \frac{x_p}{C_p} \cdot w_p$$
 
 This approach prioritizes projects that deliver the most impact per dollar spent.
 
-#### Model 2: Goal Programming Approach
+---
 
-Minimizes deviations from target proportions across impact dimensions for each charity:
+### Model 2: Goal Programming Approach
 
-- **For each charity**, sets target proportions for education, community, and health impact
-- **Calibrates scores** to measure actual achievement against targets
-- **Minimizes deviations** in both directions (under and over achievement)
-- **Balances competing objectives** between the two charities
+**Additional Variables:**
+
+| Variable | Description |
+|----------|-------------|
+| $S_{c,k}$ | Calibrated score for charity $c$ in dimension $k$ |
+| $T_c$ | Total calibrated score for charity $c$ |
+| $d^+_{c,k}, d^-_{c,k}$ | Positive/negative deviation from target proportion |
+| $d^-_B$ | Budget underutilization deviation |
+
+**Calibrated Scores:**
+
+$$S_{c,k} = \sum_{p \in P_c} \frac{x_p}{C_p} \cdot s_{p,k} \quad \forall c \in \{\text{JMDM}, \text{CSM}\}, \; k \in \{e, c, h\}$$
+
+$$T_c = S_{c,e} + S_{c,c} + S_{c,h} \quad \forall c$$
+
+**Goal Constraints:**
+
+$$S_{c,k} + d^-_{c,k} - d^+_{c,k} = \pi_{c,k} \cdot T_c \quad \forall c, k$$
+
+where $\pi_{c,k}$ is the target proportion for charity $c$ in dimension $k$.
+
+**Objective:** Minimize deviations while maximizing impact.
+
+$$\text{Minimize} \quad W_B \cdot d^-_B + W_P \sum_{c,k} \left( d^+_{c,k} + d^-_{c,k} \right) - W_I \cdot Z$$
+
+where:
+- $W_B$ = weight for budget utilization
+- $W_P$ = weight for proportional deviations
+- $W_I$ = weight for total impact
 
 This approach ensures proportional representation of impact goals while respecting all constraints.
 
