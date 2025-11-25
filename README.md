@@ -14,11 +14,12 @@ This project develops mathematical optimization models to determine optimal dona
 
 ## Key Features
 
-- **Weighted Sum Optimization**: Maximizes total weighted impact based on funding ratios and project characteristics
+- **Two Optimization Approaches**: Implements both weighted sum and goal programming models
 - **Budget Constraints**: Respects total budget allocation and charity-specific minimums
 - **Project-Level Controls**: Handles iteration limits, minimum funding requirements, and cost caps
 - **Dependency Management**: Enforces prerequisite relationships between projects
 - **Multi-Criteria Objectives**: Balances impact across education, community, and health sectors
+- **Sensitivity Analysis**: Tests weight variations to understand model robustness
 
 ## Technical Stack
 
@@ -52,7 +53,24 @@ The model requires an Excel file (`project_data.xlsx`) with the following sheets
 
 ### Objective Function
 
+#### Model 1: Weighted Sum Approach
+
+Maximizes total weighted impact based on funding efficiency:
+
 $$\text{Maximize} \quad \sum_p \frac{x_p}{\text{cost\_cap}[p]} \times \text{total\_weight}[p]$$
+
+This approach prioritizes projects that deliver the most impact per dollar spent.
+
+#### Model 2: Goal Programming Approach
+
+Minimizes deviations from target proportions across impact dimensions for each charity:
+
+- **For each charity**, sets target proportions for education, community, and health impact
+- **Calibrates scores** to measure actual achievement against targets
+- **Minimizes deviations** in both directions (under and over achievement)
+- **Balances competing objectives** between the two charities
+
+This approach ensures proportional representation of impact goals while respecting all constraints.
 
 ## Usage
 
