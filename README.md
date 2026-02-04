@@ -87,14 +87,6 @@ The model generates:
 - Constraint satisfaction verification
 - Budget utilization summary
 
-## Team
-
-- Sofia Berumen Ramos
-- Romane Lucas-Girardville
-- Andrea Vreugdenhil
-- Gina Yassin
-
-**Course**: MGSC 662 - Final Project | McGill University
 
 ## License
 
